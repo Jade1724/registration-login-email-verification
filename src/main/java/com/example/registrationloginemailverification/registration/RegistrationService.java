@@ -1,11 +1,32 @@
 package com.example.registrationloginemailverification.registration;
 
+import com.example.registrationloginemailverification.appuser.AppUser;
+import com.example.registrationloginemailverification.appuser.AppUserRole;
+import com.example.registrationloginemailverification.appuser.AppUserService;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class RegistrationService {
 
+  private final AppUserService appUserService;
+  private final EmailValidator emailValidator;
+
   public String register(RegistrationRequest request) {
-    return "works";
+    boolean isValidEmail = emailValidator.test(request.getEmail());
+    if (!isValidEmail) {
+      throw new IllegalStateException("email not valid");
+    }
+    return appUserService.signUpUser(
+        new AppUser(
+            request.getFirstName(),
+            request.getLastName(),
+            request.getEmail(),
+            request.getPassword(),
+            AppUserRole.USER
+        )
+    );
   }
 }
