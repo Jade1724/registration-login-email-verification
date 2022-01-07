@@ -1,5 +1,9 @@
 package com.example.registrationloginemailverification.appuser;
 
+import com.example.registrationloginemailverification.registration.token.ConfirmationToken;
+import com.example.registrationloginemailverification.registration.token.ConfirmationTokenService;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,6 +18,8 @@ public class AppUserService implements UserDetailsService {
   private final static String USER_NOT_FOUND_MSG = "user with email %s not found";
   private final AppUserRepository appUserRepository;
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final ConfirmationTokenService confirmationTokenService;
+
 
   @Override
   public UserDetails loadUserByUsername(String email)
@@ -35,8 +41,23 @@ public class AppUserService implements UserDetailsService {
     appUser.setPassword(encodedPassword);
     appUserRepository.save(appUser);
 
-    // TODO: Send confirmation token
+    String token = UUID.randomUUID().toString();
 
-    return "it works";
+    // TODO: Send confirmation token
+    ConfirmationToken confirmationToken = new ConfirmationToken(
+        token,
+        LocalDateTime.now(),
+        LocalDateTime.now().plusMinutes(15),
+        appUser
+    );
+
+    confirmationTokenService.saveConfirmationToken(confirmationToken);
+
+    //TODO: SEND EMAIL
+    return token;
+  }
+
+  public int enableAppUser(String email) {
+    return appUserRepository.enableAppUser(email);
   }
 }
